@@ -77,7 +77,7 @@
 3. Aggiungi la risorsa in Home Assistant:
    - Vai in **Impostazioni** → **Dashboard** → **Risorse**
    - Clicca **+ Aggiungi risorsa**
-   - URL: `/local/room-lights-graph-card.js`
+   - URL: `/local/room-lights-graph-card/room-lights-graph-card.js`
    - Tipo: **Modulo JavaScript**
 4. Ricarica il browser (`CTRL + F5`)
 
@@ -316,7 +316,7 @@ Se ti piace questo progetto:
 3. Add the resource in Home Assistant:
    - Go to **Settings** → **Dashboards** → **Resources**
    - Click **+ Add Resource**
-   - URL: `/local/room-lights-graph-card.js`
+   - URL: `/local/room-lights-graph-card/room-lights-graph-card.js`
    - Type: **JavaScript Module**
 4. Reload browser (`CTRL + F5`)
 
