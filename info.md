@@ -30,4 +30,4 @@ rooms:
 ## Support
 
 For issues, questions, or feature requests, please visit:
-https://github.com/YOUR-USERNAME/room-lights-graph-card/issues
+https://github.com/ago19800/room-lights-graph-card/issues
