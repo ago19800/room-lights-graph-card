@@ -73,7 +73,7 @@
 #### Metodo 2: Manuale
 
 1. Scarica `room-lights-graph-card.js`
-2. Copia il file in `config/www/room-lights-graph-card.js`
+2. Copia il file in `config/www/community/room-lights-graph-card/room-lights-graph-card.js`
 3. Aggiungi la risorsa in Home Assistant:
    - Vai in **Impostazioni** → **Dashboard** → **Risorse**
    - Clicca **+ Aggiungi risorsa**
@@ -220,7 +220,7 @@ Ogni azione ha risposta visiva:
 ### 🐛 Risoluzione Problemi
 
 #### La card non appare
-1. Verifica che il file sia in `config/www/room-lights-graph-card.js`
+1. Verifica che il file sia in `config/www/community/room-lights-graph-card/room-lights-graph-card.js`
 2. Controlla di aver aggiunto la risorsa in Dashboard → Risorse
 3. Ricarica il browser con `CTRL + F5`
 
@@ -312,7 +312,7 @@ Se ti piace questo progetto:
 #### Method 2: Manual
 
 1. Download `room-lights-graph-card.js`
-2. Copy the file to `config/www/room-lights-graph-card.js`
+2. Copy the file to `config/www/community/room-lights-graph-card/room-lights-graph-card.js`
 3. Add the resource in Home Assistant:
    - Go to **Settings** → **Dashboards** → **Resources**
    - Click **+ Add Resource**
@@ -459,7 +459,7 @@ Every action has visual response:
 ### 🐛 Troubleshooting
 
 #### Card doesn't appear
-1. Verify file is in `config/www/room-lights-graph-card.js`
+1. Verify file is in `config/www/community/room-lights-graph-card/room-lights-graph-card.js`
 2. Check you added the resource in Dashboards → Resources
 3. Reload browser with `CTRL + F5`
 
