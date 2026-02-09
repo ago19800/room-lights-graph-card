@@ -1,7 +1,7 @@
 # 🏠 Room Lights Graph Card
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![GitHub release](https://img.shields.io/github/release/ago19800E/room-lights-graph-card.svg)](https://github.com/ago19800/room-lights-graph-card/releases)
+[![GitHub release](https://img.shields.io/github/release/ago19800/room-lights-graph-card.svg)](https://github.com/ago19800/room-lights-graph-card/releases)
 [![License](https://img.shields.io/github/license/ago19800/room-lights-graph-card.svg)](LICENSE)
 
 [🇮🇹 Italiano](#italiano) | [🇬🇧 English](#english)
