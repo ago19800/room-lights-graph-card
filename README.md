@@ -536,5 +536,5 @@ If you find this project useful, consider:
 
 ---
 
-**Version:** 3.0.0  
+**Version:** v1.0.0 
 **Last Updated:** February 2026
