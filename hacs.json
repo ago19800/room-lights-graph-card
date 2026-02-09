@@ -1,0 +1,8 @@
+{
+  "name": "Room Lights Graph Card",
+  "content_in_root": false,
+  "filename": "room-lights-graph-card.js",
+  "country": ["IT"],
+  "homeassistant": "2023.1.0",
+  "render_readme": true
+}
