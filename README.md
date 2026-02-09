@@ -6,8 +6,13 @@
 
 [🇮🇹 Italiano](#italiano) | [🇬🇧 English](#english)
 
----
-## ☕ Supporta il Progetto
+<p align="center">
+  <img src="image/Screenshot_20260209_181202_Home Assistant.jpg" width="260" alt="Foto 1">
+  <img src="image/Screenshot_20260209_181126_Home Assistant.jpg" width="260" alt="Foto 2">
+  <img src="image/Screenshot_20260209_181143_Home Assistant.jpg" width="260" alt="Foto 3">
+</p>
+
+☕ Supporta il Progetto
 
 **Se questa card ti è utile, offrimi un caffè!**
 
