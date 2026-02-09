@@ -24,7 +24,7 @@
 
 ### Una card interattiva per Home Assistant che visualizza le tue luci organizzate per stanza in un grafico dinamico e animato
 
-![Room Lights Graph Card](screenshot.png)
+
 
 ### ✨ Funzionalità
 
@@ -263,7 +263,7 @@ Se ti piace questo progetto:
 
 ### An interactive card for Home Assistant that displays your lights organized by room in a dynamic, animated graph
 
-![Room Lights Graph Card](screenshot.png)
+
 
 ### ✨ Features
 
