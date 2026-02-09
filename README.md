@@ -7,6 +7,17 @@
 [🇮🇹 Italiano](#italiano) | [🇬🇧 English](#english)
 
 ---
+## ☕ Supporta il Progetto
+
+**Se questa card ti è utile, offrimi un caffè!**
+
+[![PayPal](https://img.shields.io/badge/PayPal-Dona%20Ora-00457C?logo=paypal&style=for-the-badge)](https://paypal.me/ago19800)
+
+**[paypal.me/ago19800](https://paypal.me/ago19800)**
+
+*Ogni donazione mi aiuta a continuare a sviluppare e migliorare questa card!* 🙏
+
+</div>
 
 <a name="italiano"></a>
 ## 🇮🇹 Italiano
@@ -503,15 +514,7 @@ If you like this project:
 
 ---
 
-### 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ---
 
@@ -519,8 +522,17 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 If you find this project useful, consider:
 - ⭐ Starring the repository
-- ☕ [Buy me a coffee](https://www.buymeacoffee.com/YOUR-USERNAME)
-- 📢 Sharing with others
+## ☕ Supporta il Progetto
+
+**Se questo addon ti è utile, offrimi un caffè!**
+
+[![PayPal](https://img.shields.io/badge/PayPal-Dona%20Ora-00457C?logo=paypal&style=for-the-badge)](https://paypal.me/ago19800)
+
+**[paypal.me/ago19800](https://paypal.me/ago19800)**
+
+*Ogni donazione mi aiuta a continuare a sviluppare e migliorare questo card!* 🙏
+
+</div>
 
 ---
 
