@@ -1,8 +1,8 @@
 # 🏠 Room Lights Graph Card
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![GitHub release](https://img.shields.io/github/release/YOUR-USERNAME/room-lights-graph-card.svg)](https://github.com/YOUR-USERNAME/room-lights-graph-card/releases)
-[![License](https://img.shields.io/github/license/YOUR-USERNAME/room-lights-graph-card.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/release/ago19800E/room-lights-graph-card.svg)](https://github.com/ago19800/room-lights-graph-card/releases)
+[![License](https://img.shields.io/github/license/ago19800/room-lights-graph-card.svg)](LICENSE)
 
 [🇮🇹 Italiano](#italiano) | [🇬🇧 English](#english)
 
@@ -64,7 +64,7 @@
 1. Apri **HACS** in Home Assistant
 2. Clicca sui **3 puntini** in alto a destra
 3. Seleziona **Repository personalizzati**
-4. Aggiungi questo URL: `https://github.com/YOUR-USERNAME/room-lights-graph-card`
+4. Aggiungi questo URL: `https://github.com/ago19800/room-lights-graph-card`
 5. Categoria: **Lovelace**
 6. Clicca **Aggiungi**
 7. Trova "Room Lights Graph Card" e clicca **Installa**
@@ -253,7 +253,7 @@ Creato con ❤️ per la community Home Assistant
 
 Se ti piace questo progetto:
 - ⭐ Metti una stella su GitHub
-- 🐛 Segnala bug o richiedi funzionalità nelle [Issues](https://github.com/YOUR-USERNAME/room-lights-graph-card/issues)
+- 🐛 Segnala bug o richiedi funzionalità nelle [Issues](https://github.com/ago19800/room-lights-graph-card/issues)
 - 💬 Condividi con la community!
 
 ---
@@ -303,7 +303,7 @@ Se ti piace questo progetto:
 1. Open **HACS** in Home Assistant
 2. Click the **3 dots** in the top right
 3. Select **Custom repositories**
-4. Add this URL: `https://github.com/YOUR-USERNAME/room-lights-graph-card`
+4. Add this URL: `https://github.com/ago19800/room-lights-graph-card`
 5. Category: **Lovelace**
 6. Click **Add**
 7. Find "Room Lights Graph Card" and click **Install**
@@ -492,7 +492,7 @@ Created with ❤️ for the Home Assistant community
 
 If you like this project:
 - ⭐ Star it on GitHub
-- 🐛 Report bugs or request features in [Issues](https://github.com/YOUR-USERNAME/room-lights-graph-card/issues)
+- 🐛 Report bugs or request features in [Issues](https://github.com/ago19800/room-lights-graph-card/issues)
 - 💬 Share with the community!
 
 ---
