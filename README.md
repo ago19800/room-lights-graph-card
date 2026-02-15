@@ -10,6 +10,8 @@
   <img src="image/Screenshot_20260209_181202_Home Assistant.jpg" width="260" alt="Foto 1">
   <img src="image/Screenshot_20260209_181126_Home Assistant.jpg" width="260" alt="Foto 2">
   <img src="image/Screenshot_20260209_181143_Home Assistant.jpg" width="260" alt="Foto 3">
+  <img src="image/Screenshot_20260215_094145_Home Assistant.jpg" width="260" alt="Foto 4">
+  <img src="image/Screenshot_20260215_094209_Home Assistant.jpg" width="260" alt="Foto 5">
 </p>
 
 ☕ Supporta il Progetto
@@ -133,13 +135,16 @@ rooms:
       - light.soggiorno_led_tv
     switches:
       - switch.soggiorno_piantana
-  
+    temperature_sensors:
+      - sensor.temperature_158d00022caebe
   - name: Cucina
     lights:
       - light.cucina_soffitto
       - light.cucina_isola
     switches:
       - switch.cucina_sottopensile
+    temperature_sensors:
+      - sensor.temperature_158d00022caebe
 ```
 
 #### Opzioni Configurazione
@@ -149,9 +154,10 @@ rooms:
 | `type` | string | **obbligatorio** | `custom:room-lights-graph-card` |
 | `title` | string | `"Controllo Luci per Stanza"` | Titolo della card |
 | `rooms` | list | **obbligatorio** | Lista delle stanze |
-| `rooms.name` | string | **obbligatorio** | Nome della stanza |
-| `rooms.lights` | list | opzionale | Lista di entità `light.*` |
-| `rooms.switches` | list | opzionale | Lista di entità `switch.*` |
+| `name` | string | **obbligatorio** | Nome della stanza |
+| `lights` | list | opzionale | Lista di entità `light.*` |
+| `switches` | list | opzionale | Lista di entità `switch.*` |
+| `temperature_sensors` | list | opzionale | Lista di entità `sensor.*` |
 
 ---
 
@@ -213,7 +219,8 @@ Ogni azione ha risposta visiva:
 - ✅ Luci RGB/RGBW
 - ✅ Luci HSV/XY
 - ✅ Interruttori switch
-
+#### Sensori temperatura Supportate
+- ✅ Sensoti temperatura
 #### Browser
 - ✅ Chrome/Edge (consigliato)
 - ✅ Firefox
@@ -372,13 +379,16 @@ rooms:
       - light.tv_led_strip
     switches:
       - switch.floor_lamp
-  
+    temperature_sensors:
+      - sensor.temperature_158d00022caebe  
   - name: Kitchen
     lights:
       - light.kitchen_ceiling
       - light.kitchen_island
     switches:
       - switch.under_cabinet
+    temperature_sensors:
+      - sensor.temperature_158d00022caebe
 ```
 
 #### Configuration Options
@@ -388,10 +398,10 @@ rooms:
 | `type` | string | **required** | `custom:room-lights-graph-card` |
 | `title` | string | `"Room Lights Control"` | Card title |
 | `rooms` | list | **required** | List of rooms |
-| `rooms.name` | string | **required** | Room name |
-| `rooms.lights` | list | optional | List of `light.*` entities |
-| `rooms.switches` | list | optional | List of `switch.*` entities |
-
+| `name` | string | **required** | Room name |
+| `lights` | list | optional | List of `light.*` entities |
+| `switches` | list | optional | List of `switch.*` entities |
+| `temperature_sensors` | list | optional | List of `sensor.*` entities |
 ---
 
 ### 🎮 Usage
@@ -452,7 +462,8 @@ Every action has visual response:
 - ✅ RGB/RGBW lights
 - ✅ HSV/XY lights
 - ✅ Switch switches
-
+#### Supported Sensor temperature
+- ✅ Sensor temperature
 #### Browsers
 - ✅ Chrome/Edge (recommended)
 - ✅ Firefox
