@@ -14,6 +14,7 @@ class RoomLightsGraphCard extends HTMLElement {
     this._translateX    = 0;
     this._translateY    = 0;
     this._nodePositions = new Map();
+    this._customNames   = new Map();  // entity_id → nome personalizzato
     this._isDragging    = false;
     this._isPanning     = false;
   }
@@ -70,7 +71,8 @@ class RoomLightsGraphCard extends HTMLElement {
       const data = {
         tx: this._translateX,
         ty: this._translateY,
-        nodes: Object.fromEntries(this._nodePositions)
+        nodes: Object.fromEntries(this._nodePositions),
+        names: Object.fromEntries(this._customNames)
       };
       localStorage.setItem(this._storageKey(), JSON.stringify(data));
     } catch (e) { /* localStorage non disponibile, ignora */ }
@@ -82,9 +84,10 @@ class RoomLightsGraphCard extends HTMLElement {
       if (!raw) return false;
       const data = JSON.parse(raw);
       if (!data.nodes) return false;
-      this._translateX = data.tx || 0;
-      this._translateY = data.ty || 0;
+      this._translateX    = data.tx || 0;
+      this._translateY    = data.ty || 0;
       this._nodePositions = new Map(Object.entries(data.nodes));
+      this._customNames   = new Map(Object.entries(data.names || {}));
       return true;
     } catch (e) { return false; }
   }
@@ -96,7 +99,10 @@ class RoomLightsGraphCard extends HTMLElement {
   /* ── COSTRUZIONE POSIZIONI ──────────────────────────────── */
 
   _buildPositions() {
-    // Prova a caricare dal localStorage — se OK usa quelle
+    // Prima, popola sempre _customNames dalla config attuale
+    this._extractCustomNames();
+    
+    // Prova a caricare dal localStorage — se OK usa quelle posizioni
     if (this._loadPositions()) {
       // Verifica che tutte le chiavi necessarie siano presenti
       if (this._allKeysPresent()) return;
@@ -105,17 +111,38 @@ class RoomLightsGraphCard extends HTMLElement {
     this._generatePositions();
   }
 
+  // Estrae i custom names dalla config e li mette in _customNames
+  _extractCustomNames() {
+    this._customNames = new Map();
+    const rooms = this._config.rooms || [];
+    rooms.forEach(room => {
+      this._parseDevices(room.lights || [], 'dev_').forEach(d => {
+        if (d.name) this._customNames.set(d.id, d.name);
+      });
+      this._parseDevices(room.switches || [], 'dev_').forEach(d => {
+        if (d.name) this._customNames.set(d.id, d.name);
+      });
+      this._parseDevices(room.temperature_sensors || [], 'tmp_').forEach(d => {
+        if (d.name) this._customNames.set(d.id, d.name);
+      });
+    });
+  }
+
   // Controlla che ogni device/room abbia una posizione salvata
   _allKeysPresent() {
     const rooms = this._config.rooms || [];
     for (let i = 0; i < rooms.length; i++) {
       if (!this._nodePositions.has(`room_${i}`)) return false;
       const room = rooms[i];
-      for (const id of [...(room.lights||[]),...(room.switches||[])]) {
-        if (!this._nodePositions.has('dev_' + id)) return false;
-      }
-      for (const id of (room.temperature_sensors||[])) {
-        if (!this._nodePositions.has('tmp_' + id)) return false;
+      
+      const allDevs = [
+        ...this._parseDevices(room.lights || [], 'dev_'),
+        ...this._parseDevices(room.switches || [], 'dev_'),
+        ...this._parseDevices(room.temperature_sensors || [], 'tmp_')
+      ];
+      
+      for (const d of allDevs) {
+        if (!this._nodePositions.has(d.prefix + d.id)) return false;
       }
     }
     return true;
@@ -123,6 +150,7 @@ class RoomLightsGraphCard extends HTMLElement {
 
   _generatePositions() {
     this._nodePositions = new Map();
+    this._customNames   = new Map();  // Mappa entity_id → nome custom
     this._translateX    = 0;
     this._translateY    = 0;
 
@@ -141,15 +169,27 @@ class RoomLightsGraphCard extends HTMLElement {
     rooms.forEach((room, i) => {
       const rPos    = this._nodePositions.get(`room_${i}`);
       const devices = [
-        ...(room.lights             || []).map(id => ({ id, prefix: 'dev_' })),
-        ...(room.switches           || []).map(id => ({ id, prefix: 'dev_' })),
-        ...(room.temperature_sensors|| []).map(id => ({ id, prefix: 'tmp_' })),
+        ...this._parseDevices(room.lights || [], 'dev_'),
+        ...this._parseDevices(room.switches || [], 'dev_'),
+        ...this._parseDevices(room.temperature_sensors || [], 'tmp_'),
       ];
       devices.forEach(d => {
-        this._nodePositions.set(d.prefix + d.id,
-          this._randomPos(rPos.x, rPos.y));
+        this._nodePositions.set(d.prefix + d.id, this._randomPos(rPos.x, rPos.y));
+        if (d.name) this._customNames.set(d.id, d.name);
       });
     });
+  }
+
+  // Supporta sia "entity_id" che { entity: "id", name: "custom" }
+  _parseDevices(list, prefix) {
+    return list.map(item => {
+      if (typeof item === 'string') {
+        return { id: item, prefix };
+      } else if (item.entity) {
+        return { id: item.entity, prefix, name: item.name };
+      }
+      return null;
+    }).filter(Boolean);
   }
 
   _randomPos(rx, ry) {
@@ -323,20 +363,23 @@ class RoomLightsGraphCard extends HTMLElement {
       this._addLine(lG, CX, CY, rPos.x, rPos.y, 'center', rKey, false);
       nG.appendChild(this._makeRoomNode(rPos, room.name, rKey));
 
-      [...(room.lights||[]),...(room.switches||[])].forEach(id => {
-        const key = 'dev_' + id;
+      const lights = this._parseDevices(room.lights || [], 'dev_');
+      const switches = this._parseDevices(room.switches || [], 'dev_');
+      [...lights, ...switches].forEach(d => {
+        const key = d.prefix + d.id;
         const pos = this._nodePositions.get(key);
         if (!pos) return;
         this._addLine(lG, rPos.x, rPos.y, pos.x, pos.y, rKey, key, false);
-        nG.appendChild(this._makeDevNode(pos, id, key));
+        nG.appendChild(this._makeDevNode(pos, d.id, key));
       });
 
-      (room.temperature_sensors||[]).forEach(id => {
-        const key = 'tmp_' + id;
+      const temps = this._parseDevices(room.temperature_sensors || [], 'tmp_');
+      temps.forEach(d => {
+        const key = d.prefix + d.id;
         const pos = this._nodePositions.get(key);
         if (!pos) return;
         this._addLine(lG, rPos.x, rPos.y, pos.x, pos.y, rKey, key, true);
-        nG.appendChild(this._makeTmpNode(pos, id, key));
+        nG.appendChild(this._makeTmpNode(pos, d.id, key));
       });
     });
 
@@ -371,8 +414,14 @@ class RoomLightsGraphCard extends HTMLElement {
   _makeDevNode(pos, entityId, key) {
     const g      = this._svgG(key,'dev');
     const entity = this._hass ? this._hass.states[entityId] : null;
-    const name   = entity?.attributes?.friendly_name || entityId.split('.')[1] || entityId;
-    const icon   = entityId.startsWith('light.') ? '\uD83D\uDCA1' : '\uD83D\uDD0C';
+    
+    // Usa il nome custom se presente, altrimenti friendly_name, altrimenti entity_id
+    const name = this._customNames.get(entityId) || 
+                 entity?.attributes?.friendly_name || 
+                 entityId.split('.')[1] || 
+                 entityId;
+    
+    const icon = entityId.startsWith('light.') ? '\uD83D\uDCA1' : '\uD83D\uDD0C';
 
     const c = this._svgEl('circle');
     c.setAttribute('class','dev-circle');
@@ -393,7 +442,12 @@ class RoomLightsGraphCard extends HTMLElement {
     const color  = this._tempColor(temp);
     const dark   = this._darken(color,22);
     const valTxt = isNaN(temp) ? '--' : temp.toFixed(1)+unit;
-    const name   = entity?.attributes?.friendly_name || entityId.split('.')[1] || entityId;
+    
+    // Usa il nome custom se presente
+    const name = this._customNames.get(entityId) || 
+                 entity?.attributes?.friendly_name || 
+                 entityId.split('.')[1] || 
+                 entityId;
 
     const c = this._svgEl('circle');
     c.setAttribute('class','tmp-circle');
@@ -622,8 +676,12 @@ class RoomLightsGraphCard extends HTMLElement {
       const g = this.shadowRoot.querySelector(`g[data-key="room_${i}"]`);
       const c = g?.querySelector('.room-circle');
       if (!c) return;
-      const active = [...(room.lights||[]),...(room.switches||[])]
-        .some(id => this._hass.states[id]?.state === 'on');
+      
+      const lights = this._parseDevices(room.lights || [], 'dev_');
+      const switches = this._parseDevices(room.switches || [], 'dev_');
+      const allIds = [...lights, ...switches].map(d => d.id);
+      
+      const active = allIds.some(id => this._hass.states[id]?.state === 'on');
       c.classList.toggle('r-active', active);
     });
   }
@@ -636,8 +694,13 @@ class RoomLightsGraphCard extends HTMLElement {
     if (!entity) return;
 
     const popup = this._basePopup();
-    popup.querySelector('.pop-hdr-title').textContent =
-      '\uD83D\uDCA1 ' + (entity.attributes.friendly_name || entityId);
+    
+    // Usa nome custom se presente
+    const displayName = this._customNames.get(entityId) || 
+                        entity.attributes.friendly_name || 
+                        entityId;
+    
+    popup.querySelector('.pop-hdr-title').textContent = '\uD83D\uDCA1 ' + displayName;
 
     const br     = entity.attributes.brightness
       ? Math.round(entity.attributes.brightness/255*100) : 0;
@@ -698,7 +761,12 @@ class RoomLightsGraphCard extends HTMLElement {
     const unit   = entity.attributes.unit_of_measurement || '°C';
     const color  = this._tempColor(temp);
     const dark   = this._darken(color,25);
-    const name   = entity.attributes.friendly_name || entityId.split('.')[1];
+    
+    // Usa nome custom se presente
+    const name = this._customNames.get(entityId) || 
+                 entity.attributes.friendly_name || 
+                 entityId.split('.')[1];
+    
     const hum    = entity.attributes.humidity;
     const pct    = Math.min(95,Math.max(5,((temp-5)/30)*100));
 
