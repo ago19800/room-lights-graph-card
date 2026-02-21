@@ -31,25 +31,37 @@
 
 ### Una card interattiva per Home Assistant che visualizza le tue luci organizzate per stanza in un grafico dinamico e animato
 
+### ✨ Caratteristiche
 
+- 🎨 **Visualizzazione Grafica Interattiva** - Grafo radiale con nodi trascinabili
+- 💡 **Animazioni Fluide** - Effetti di respirazione dinamici basati su luminosità e stato
+- 🌡️ **Sensori Temperatura** - Colori dinamici in base alla temperatura (blu freddo → rosso caldo)
+- 🎯 **Controllo Completo** - Popup con controlli per luminosità, RGB, on/off
+- 💾 **Posizioni Persistenti** - Le posizioni dei nodi vengono salvate automaticamente
+- 🎲 **Posizionamento Casuale** - Ad ogni reset, posizioni casuali senza sovrapposizioni
+- 🏷️ **Nomi Personalizzati** - Rinomina i dispositivi direttamente nella configurazione
+- 📱 **Responsive** - Funziona su desktop, tablet e mobile
+- 🎭 **Temi** - Si adatta automaticamente al tema di Home Assistant
 
-### ✨ Funzionalità
+### 🎬 Funzionalità Visive
 
-#### 🎨 Visualizzazione Intelligente
-- **Grafo Interattivo**: Organizza le luci per stanza con nodi collegati
-- **Colori RGB Reali**: Le luci RGB mostrano il loro colore effettivo sull'icona
-- **Animazione Respirazione**: I nodi "respirano" quando le luci sono accese
-  - 🚀 Veloce per luci ad alta luminosità
-  - 💫 Normale per luminosità media  
-  - 🌙 Lenta per luci dim/soffuse
-- **Effetto Glow**: Alone luminoso colorato per luci RGB
+#### Luci
+- **Spente**: grigio statico
+- **Accese**: giallo con respirazione
+- **RGB**: colore dinamico con effetto glow pulsante
+- **Luminosità**: velocità respirazione basata su brightness (veloce = alta, lenta = bassa)
 
-#### 🎮 Controlli Completi
-- **Drag & Drop**: Trascina nodi e stanze per riorganizzare il layout
-- **Zoom & Pan**: Zoom con rotellina mouse, trascinamento canvas
-- **Popup Trascinabile**: Controlli sempre visibili e posizionabili
-- **Dimmer**: Slider luminosità con feedback visivo immediato
-- **RGB Picker**: Selettore colore con anteprima in tempo reale
+#### Sensori Temperatura
+- **Animazione**: pulsazione continua (veloce se >26°C, lenta se <15°C)
+- **Colori Dinamici**:
+  - 🔵 ≤10°C: Blu intenso (molto freddo)
+  - 🩵 11-15°C: Azzurro (freddo)
+  - 🟦 16-19°C: Ciano (fresco)
+  - 🟢 20-22°C: Verde (confortevole) ✅
+  - 🟠 23-25°C: Arancione (caldo)
+  - 🔴 26-28°C: Rosso (molto caldo)
+  - 🩸 >28°C: Rosso scuro (caldissimo)
+
 
 #### 💫 Effetti WOW
 - **Pulse Feedback**: Animazione rapida quando cambi luminosità o colore
@@ -146,7 +158,45 @@ rooms:
     temperature_sensors:
       - sensor.temperature_158d00022caebe
 ```
+#### Configurazione con Nomi Personalizzati (✨ NUOVO v1.0.4)
+```yaml
+type: custom:room-lights-graph-card
+title: Casa
+rooms:
+  - name: Cucina
+    lights:
+      # Formato semplice (usa friendly_name di HA)
+      - light.principale
+      
+      # Formato con nome custom
+      - entity: light.faretto1
+        name: "F1"
+      - entity: light.faretto2
+        name: "F2"
+      - entity: light.0xec1bbdfffe1c9e37
+        name: "Sotto Pensili"
+    
+    temperature_sensors:
+      - entity: sensor.temp_cucina
+        name: "Temp"
 
+  - name: Camera
+    lights:
+      - entity: light.camera_principale
+        name: "Lampadario"
+      - entity: light.comodino_sx
+        name: "Comodino SX"
+      - entity: light.comodino_dx
+        name: "Comodino DX"
+    
+    switches:
+      - entity: switch.luce_armadio
+        name: "Armadio"
+    
+    temperature_sensors:
+      - entity: sensor.temperatura_camera
+        name: "T"
+```
 #### Opzioni Configurazione
 
 | Opzione | Tipo | Default | Descrizione |
@@ -275,25 +325,42 @@ Se ti piace questo progetto:
 
 ### An interactive card for Home Assistant that displays your lights organized by room in a dynamic, animated graph
 
-
-
 ### ✨ Features
 
-#### 🎨 Smart Visualization
-- **Interactive Graph**: Organize lights by room with connected nodes
-- **Real RGB Colors**: RGB lights display their actual color on the icon
-- **Breathing Animation**: Nodes "breathe" when lights are on
-  - 🚀 Fast for high brightness
-  - 💫 Normal for medium brightness
-  - 🌙 Slow for dim lights
-- **Glow Effect**: Colored halo for RGB lights
+- 🎨 **Interactive Graph Visualization** - Radial graph with draggable nodes
+- 💡 **Smooth Animations** - Dynamic breathing effects based on brightness and state
+- 🌡️ **Temperature Sensors** - Dynamic colors based on temperature (blue cold → red hot)
+- 🎯 **Full Control** - Popup with brightness, RGB, and on/off controls
+- 💾 **Persistent Positions** - Node positions automatically saved
+- 🎲 **Random Placement** - Each reset generates random positions without overlaps
+- 🏷️ **Custom Names** - Rename devices directly in configuration
+- 📱 **Responsive** - Works on desktop, tablet, and mobile
+- 🎭 **Themes** - Automatically adapts to Home Assistant theme
 
-#### 🎮 Complete Controls
-- **Drag & Drop**: Drag nodes and rooms to reorganize layout
-- **Zoom & Pan**: Zoom with mouse wheel, drag canvas
-- **Draggable Popup**: Always visible and positionable controls
-- **Dimmer**: Brightness slider with immediate visual feedback
-- **RGB Picker**: Color picker with real-time preview
+### 🎬 Visual Features
+
+#### Lights
+- **Off**: static gray
+- **On**: yellow with breathing effect
+- **RGB**: dynamic color with pulsing glow
+- **Brightness**: breathing speed based on brightness (fast = high, slow = low)
+
+#### Temperature Sensors
+- **Animation**: continuous pulsation (fast if >26°C, slow if <15°C)
+- **Dynamic Colors**:
+  - 🔵 ≤10°C: Deep blue (very cold)
+  - 🩵 11-15°C: Light blue (cold)
+  - 🟦 16-19°C: Cyan (cool)
+  - 🟢 20-22°C: Green (comfortable) ✅
+  - 🟠 23-25°C: Orange (warm)
+  - 🔴 26-28°C: Red (hot)
+  - 🩸 >28°C: Dark red (very hot)
+
+#### Rooms
+- **Breathing**: when at least one light is on
+- **Blue glow**: shadow effect when active
+
+
 
 #### 💫 WOW Effects
 - **Pulse Feedback**: Quick animation when changing brightness or color
@@ -390,7 +457,45 @@ rooms:
     temperature_sensors:
       - sensor.temperature_158d00022caebe
 ```
+#### Configuration with Custom Names (✨ NEW v1.0.4)
+```yaml
+type: custom:room-lights-graph-card
+title: Home
+rooms:
+  - name: Kitchen
+    lights:
+      # Simple format (uses HA friendly_name)
+      - light.main
+      
+      # Object format with custom name
+      - entity: light.spotlight1
+        name: "S1"
+      - entity: light.spotlight2
+        name: "S2"
+      - entity: light.0xec1bbdfffe1c9e37
+        name: "Under Cabinet"
+    
+    temperature_sensors:
+      - entity: sensor.kitchen_temp
+        name: "Temp"
 
+  - name: Bedroom
+    lights:
+      - entity: light.bedroom_main
+        name: "Ceiling"
+      - entity: light.nightstand_left
+        name: "Left"
+      - entity: light.nightstand_right
+        name: "Right"
+    
+    switches:
+      - entity: switch.closet_light
+        name: "Closet"
+    
+    temperature_sensors:
+      - entity: sensor.bedroom_temperature
+        name: "T"
+```
 #### Configuration Options
 
 | Option | Type | Default | Description |
@@ -540,7 +645,7 @@ If you find this project useful, consider:
 - ⭐ Starring the repository
 ## ☕ Supporta il Progetto
 
-**Se questo addon ti è utile, offrimi un caffè!**
+**Se questa CARD ti è utile, offrimi un caffè!**
 
 [![PayPal](https://img.shields.io/badge/PayPal-Dona%20Ora-00457C?logo=paypal&style=for-the-badge)](https://paypal.me/ago19800)
 
