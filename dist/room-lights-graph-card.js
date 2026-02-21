@@ -1,8 +1,9 @@
 /* =========================================================
-   room-lights-graph-card  v4.0
+   room-lights-graph-card  v1.0.4
    - Luci, switch, sensori temperatura
    - Cerchi grandi, distanze ampie
    - Posizioni persistenti via localStorage
+   - Personalizzare entità 
    ========================================================= */
 class RoomLightsGraphCard extends HTMLElement {
   constructor() {
