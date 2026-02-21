@@ -26,7 +26,45 @@ rooms:
     lights:
       - light.living_room_main
 ```
+#### Configuration with Custom Names (✨ NEW v1.0.4)
+```yaml
+type: custom:room-lights-graph-card
+title: Home
+rooms:
+  - name: Kitchen
+    lights:
+      # Simple format (uses HA friendly_name)
+      - light.main
+      
+      # Object format with custom name
+      - entity: light.spotlight1
+        name: "S1"
+      - entity: light.spotlight2
+        name: "S2"
+      - entity: light.0xec1bbdfffe1c9e37
+        name: "Under Cabinet"
+    
+    temperature_sensors:
+      - entity: sensor.kitchen_temp
+        name: "Temp"
 
+  - name: Bedroom
+    lights:
+      - entity: light.bedroom_main
+        name: "Ceiling"
+      - entity: light.nightstand_left
+        name: "Left"
+      - entity: light.nightstand_right
+        name: "Right"
+    
+    switches:
+      - entity: switch.closet_light
+        name: "Closet"
+    
+    temperature_sensors:
+      - entity: sensor.bedroom_temperature
+        name: "T"
+```
 ## Support
 
 For issues, questions, or feature requests, please visit:
