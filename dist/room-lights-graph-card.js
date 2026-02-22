@@ -1,9 +1,8 @@
 /* =========================================================
-   room-lights-graph-card  v1.0.4
+   room-lights-graph-card  v4.0
    - Luci, switch, sensori temperatura
    - Cerchi grandi, distanze ampie
    - Posizioni persistenti via localStorage
-   - Personalizzare entità 
    ========================================================= */
 class RoomLightsGraphCard extends HTMLElement {
   constructor() {
@@ -16,6 +15,7 @@ class RoomLightsGraphCard extends HTMLElement {
     this._translateY    = 0;
     this._nodePositions = new Map();
     this._customNames   = new Map();  // entity_id → nome personalizzato
+    this._devicePower   = new Map();  // entity_id → wattaggio (W)
     this._isDragging    = false;
     this._isPanning     = false;
   }
@@ -24,11 +24,27 @@ class RoomLightsGraphCard extends HTMLElement {
 
   setConfig(config) {
     if (!config.rooms) throw new Error('room-lights-graph-card: manca "rooms"');
+    
+    // Rileva se la configurazione è cambiata
+    const hadConfig = this._config !== null && this._config !== undefined;
+    const configChanged = hadConfig && 
+      JSON.stringify(this._config) !== JSON.stringify(config);
+    
     this._config = config;
-    this._buildPositions();
-    if (this._rendered) {
+    this._buildPositions();  // Aggiorna _customNames e _devicePower
+    
+    // SEMPRE fare re-render completo se config cambiata e card già renderizzata
+    // Questo garantisce che nomi, power e struttura si aggiornino immediatamente
+    if (this._rendered && configChanged) {
       this._renderGraph();
-      if (this._hass) this._updateStates();
+      
+      if (this._hass) {
+        this._updateStates();
+        // Secondo aggiornamento dopo delay per stati ritardati
+        setTimeout(() => {
+          if (this._hass) this._updateStates();
+        }, 150);
+      }
     }
   }
 
@@ -100,41 +116,39 @@ class RoomLightsGraphCard extends HTMLElement {
   /* ── COSTRUZIONE POSIZIONI ──────────────────────────────── */
 
   _buildPositions() {
-    // Prima, popola sempre _customNames dalla config attuale
+    // SEMPRE estrai custom names e power dalla config - anche se i nomi sono l'unica cosa cambiata
     this._extractCustomNames();
     
-    // Prova a caricare dal localStorage — se OK usa quelle posizioni
-    if (this._loadPositions()) {
-      // Verifica che tutte le chiavi necessarie siano presenti
-      if (this._allKeysPresent()) return;
+    // Prova a caricare posizioni salvate
+    const hasLoadedPositions = this._loadPositions();
+    
+    // Controlla se ci sono nuovi dispositivi non presenti nelle posizioni salvate
+    const missingKeys = this._getMissingKeys();
+    
+    if (hasLoadedPositions && missingKeys.length === 0) {
+      // Tutte le posizioni presenti - usa quelle salvate
+      // I nomi custom sono già stati aggiornati sopra
+      return;
     }
-    // Altrimenti genera posizioni casuali
+    
+    if (hasLoadedPositions && missingKeys.length > 0) {
+      // Ci sono nuovi dispositivi - aggiungi solo quelli mancanti
+      this._addMissingDevices(missingKeys);
+      return;
+    }
+    
+    // Nessuna posizione salvata - genera tutto da zero
     this._generatePositions();
   }
 
-  // Estrae i custom names dalla config e li mette in _customNames
-  _extractCustomNames() {
-    this._customNames = new Map();
+  // Restituisce array di chiavi mancanti
+  _getMissingKeys() {
+    const missing = [];
     const rooms = this._config.rooms || [];
-    rooms.forEach(room => {
-      this._parseDevices(room.lights || [], 'dev_').forEach(d => {
-        if (d.name) this._customNames.set(d.id, d.name);
-      });
-      this._parseDevices(room.switches || [], 'dev_').forEach(d => {
-        if (d.name) this._customNames.set(d.id, d.name);
-      });
-      this._parseDevices(room.temperature_sensors || [], 'tmp_').forEach(d => {
-        if (d.name) this._customNames.set(d.id, d.name);
-      });
-    });
-  }
-
-  // Controlla che ogni device/room abbia una posizione salvata
-  _allKeysPresent() {
-    const rooms = this._config.rooms || [];
-    for (let i = 0; i < rooms.length; i++) {
-      if (!this._nodePositions.has(`room_${i}`)) return false;
-      const room = rooms[i];
+    
+    rooms.forEach((room, i) => {
+      const rKey = `room_${i}`;
+      if (!this._nodePositions.has(rKey)) missing.push(rKey);
       
       const allDevs = [
         ...this._parseDevices(room.lights || [], 'dev_'),
@@ -142,16 +156,80 @@ class RoomLightsGraphCard extends HTMLElement {
         ...this._parseDevices(room.temperature_sensors || [], 'tmp_')
       ];
       
-      for (const d of allDevs) {
-        if (!this._nodePositions.has(d.prefix + d.id)) return false;
+      allDevs.forEach(d => {
+        const key = d.prefix + d.id;
+        if (!this._nodePositions.has(key)) missing.push(key);
+      });
+    });
+    
+    return missing;
+  }
+
+  // Aggiunge solo i dispositivi mancanti senza sovrascrivere posizioni esistenti
+  _addMissingDevices(missingKeys) {
+    const rooms = this._config.rooms || [];
+    
+    rooms.forEach((room, i) => {
+      const rKey = `room_${i}`;
+      
+      // Se manca la stanza, aggiungila con posizione calcolata
+      if (missingKeys.includes(rKey)) {
+        const CX = 475, CY = 460, R_ROOM = 230;
+        const angle = (i * 2 * Math.PI / rooms.length) - Math.PI / 2;
+        this._nodePositions.set(rKey, {
+          x: Math.round(CX + R_ROOM * Math.cos(angle)),
+          y: Math.round(CY + R_ROOM * Math.sin(angle))
+        });
       }
-    }
-    return true;
+      
+      // Posizione della stanza (ora garantita)
+      const rPos = this._nodePositions.get(rKey);
+      if (!rPos) return;
+      
+      // Aggiungi solo i dispositivi mancanti
+      const allDevs = [
+        ...this._parseDevices(room.lights || [], 'dev_'),
+        ...this._parseDevices(room.switches || [], 'dev_'),
+        ...this._parseDevices(room.temperature_sensors || [], 'tmp_')
+      ];
+      
+      allDevs.forEach(d => {
+        const key = d.prefix + d.id;
+        if (missingKeys.includes(key)) {
+          this._nodePositions.set(key, this._randomPos(rPos.x, rPos.y));
+        }
+      });
+    });
+    
+    // Salva le nuove posizioni
+    this._savePositions();
+  }
+
+  // Estrae i custom names e power dalla config
+  _extractCustomNames() {
+    this._customNames = new Map();
+    this._devicePower = new Map();
+    const rooms = this._config.rooms || [];
+    rooms.forEach(room => {
+      this._parseDevices(room.lights || [], 'dev_').forEach(d => {
+        if (d.name) this._customNames.set(d.id, d.name);
+        if (d.power) this._devicePower.set(d.id, d.power);
+      });
+      this._parseDevices(room.switches || [], 'dev_').forEach(d => {
+        if (d.name) this._customNames.set(d.id, d.name);
+        if (d.power) this._devicePower.set(d.id, d.power);
+      });
+      this._parseDevices(room.temperature_sensors || [], 'tmp_').forEach(d => {
+        if (d.name) this._customNames.set(d.id, d.name);
+      });
+    });
   }
 
   _generatePositions() {
+    // Inizializza da zero
     this._nodePositions = new Map();
     this._customNames   = new Map();  // Mappa entity_id → nome custom
+    this._devicePower   = new Map();  // Mappa entity_id → wattaggio
     this._translateX    = 0;
     this._translateY    = 0;
 
@@ -159,6 +237,7 @@ class RoomLightsGraphCard extends HTMLElement {
     // ViewBox 950×950, centro (475,460), raggio stanze 230
     const CX = 475, CY = 460, R_ROOM = 230;
 
+    // FASE 1: Posiziona tutte le stanze prima
     rooms.forEach((room, i) => {
       const angle = (i * 2 * Math.PI / rooms.length) - Math.PI / 2;
       this._nodePositions.set(`room_${i}`, {
@@ -167,27 +246,42 @@ class RoomLightsGraphCard extends HTMLElement {
       });
     });
 
+    // FASE 2: Posiziona i dispositivi stanza per stanza
     rooms.forEach((room, i) => {
-      const rPos    = this._nodePositions.get(`room_${i}`);
+      const rPos = this._nodePositions.get(`room_${i}`);
+      if (!rPos) return;
+      
+      // Raccogli tutti i dispositivi
       const devices = [
         ...this._parseDevices(room.lights || [], 'dev_'),
         ...this._parseDevices(room.switches || [], 'dev_'),
         ...this._parseDevices(room.temperature_sensors || [], 'tmp_'),
       ];
+      
+      // Aggiungi dispositivi uno alla volta con anti-overlap
       devices.forEach(d => {
-        this._nodePositions.set(d.prefix + d.id, this._randomPos(rPos.x, rPos.y));
+        const pos = this._randomPos(rPos.x, rPos.y);
+        this._nodePositions.set(d.prefix + d.id, pos);
+        
+        // Salva metadati
         if (d.name) this._customNames.set(d.id, d.name);
+        if (d.power) this._devicePower.set(d.id, d.power);
       });
     });
   }
 
-  // Supporta sia "entity_id" che { entity: "id", name: "custom" }
+  // Supporta sia "entity_id" che { entity: "id", name: "custom", power: 50 }
   _parseDevices(list, prefix) {
     return list.map(item => {
       if (typeof item === 'string') {
         return { id: item, prefix };
       } else if (item.entity) {
-        return { id: item.entity, prefix, name: item.name };
+        return { 
+          id: item.entity, 
+          prefix, 
+          name: item.name,
+          power: item.power  // wattaggio in W
+        };
       }
       return null;
     }).filter(Boolean);
@@ -195,28 +289,75 @@ class RoomLightsGraphCard extends HTMLElement {
 
   _randomPos(rx, ry) {
     // Distanze ampie: min 130px, max 210px dal centro stanza
-    const MIN_R = 130, MAX_R = 210, MIN_DIST = 82;
+    const MIN_R = 130, MAX_R = 210;
+    const MIN_DIST = 85;  // Aumentato da 82 a 85 per maggiore sicurezza
     const W = 950, H = 950, PAD = 65;
 
-    for (let t = 0; t < 300; t++) {
+    // Aumentato numero tentativi da 300 a 500
+    for (let t = 0; t < 500; t++) {
       const a = Math.random() * Math.PI * 2;
       const r = MIN_R + Math.random() * (MAX_R - MIN_R);
       const x = rx + r * Math.cos(a);
       const y = ry + r * Math.sin(a);
 
+      // Controlla bounds
       if (x < PAD || x > W - PAD || y < PAD || y > H - PAD) continue;
 
+      // Controlla overlap con TUTTI i nodi esistenti
       let ok = true;
-      for (const p of this._nodePositions.values()) {
-        if (Math.hypot(p.x - x, p.y - y) < MIN_DIST) { ok = false; break; }
+      for (const pos of this._nodePositions.values()) {
+        const dist = Math.hypot(pos.x - x, pos.y - y);
+        if (dist < MIN_DIST) { 
+          ok = false; 
+          break; 
+        }
       }
       if (ok) return { x, y };
     }
-    const a = Math.random() * Math.PI * 2;
-    return {
-      x: Math.max(PAD, Math.min(W - PAD, rx + MIN_R * Math.cos(a))),
-      y: Math.max(PAD, Math.min(H - PAD, ry + MIN_R * Math.sin(a)))
-    };
+    
+    // Fallback con tentativo spirale se non trova spazio
+    // Prova posizioni in cerchi concentrici sempre più lontani
+    for (let radius = MIN_R; radius <= MAX_R + 100; radius += 20) {
+      for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 12) {
+        const x = rx + radius * Math.cos(angle);
+        const y = ry + radius * Math.sin(angle);
+        
+        if (x < PAD || x > W - PAD || y < PAD || y > H - PAD) continue;
+        
+        let ok = true;
+        for (const pos of this._nodePositions.values()) {
+          if (Math.hypot(pos.x - x, pos.y - y) < MIN_DIST) {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) return { x, y };
+      }
+    }
+    
+    // Fallback finale - trova la posizione meno sovrapposta possibile
+    let bestPos = { x: rx + MIN_R, y: ry };
+    let bestDist = 0;
+    
+    for (let t = 0; t < 100; t++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = MIN_R + Math.random() * (MAX_R - MIN_R);
+      const x = Math.max(PAD, Math.min(W - PAD, rx + r * Math.cos(a)));
+      const y = Math.max(PAD, Math.min(H - PAD, ry + r * Math.sin(a)));
+      
+      let minDist = Infinity;
+      for (const pos of this._nodePositions.values()) {
+        const d = Math.hypot(pos.x - x, pos.y - y);
+        if (d < minDist) minDist = d;
+      }
+      
+      if (minDist > bestDist) {
+        bestDist = minDist;
+        bestPos = { x, y };
+      }
+    }
+    
+    return bestPos;
   }
 
   /* ── TEMPLATE ───────────────────────────────────────────── */
@@ -261,6 +402,18 @@ class RoomLightsGraphCard extends HTMLElement {
 
         /* ── testo ── */
         .lbl { font-size:14px;fill:var(--primary-text-color);font-weight:600;pointer-events:none; }
+
+        /* ── consumo energetico ── */
+        .power-label {
+          transition: fill 0.3s ease;
+        }
+        @keyframes power-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        .power-high { fill: #EF5350 !important; animation: power-pulse 2s ease-in-out infinite; }
+        .power-med  { fill: #FFA726 !important; }
+        .power-low  { fill: #66BB6A !important; }
 
         /* ── nodo cursore ── */
         .node { cursor:pointer; }
@@ -346,6 +499,48 @@ class RoomLightsGraphCard extends HTMLElement {
     </ha-card>`;
   }
 
+  /* ── CALCOLO CONSUMO ENERGETICO ─────────────────────────── */
+
+  // Calcola consumo totale di tutti i dispositivi accesi (in Watt)
+  _calculateTotalPower() {
+    if (!this._hass) return 0;
+    let total = 0;
+    for (const [entityId, power] of this._devicePower.entries()) {
+      const state = this._hass.states[entityId];
+      if (state && state.state === 'on') {
+        total += power;
+      }
+    }
+    return total;
+  }
+
+  // Calcola consumo di una stanza specifica (in Watt)
+  _calculateRoomPower(room) {
+    if (!this._hass) return 0;
+    const devices = [
+      ...this._parseDevices(room.lights || [], 'dev_'),
+      ...this._parseDevices(room.switches || [], 'dev_'),
+    ];
+    let total = 0;
+    devices.forEach(d => {
+      const power = this._devicePower.get(d.id);
+      if (power) {
+        const state = this._hass.states[d.id];
+        if (state && state.state === 'on') {
+          total += power;
+        }
+      }
+    });
+    return total;
+  }
+
+  // Formatta consumo in modo leggibile
+  _formatPower(watts) {
+    if (watts === 0) return '0 W';
+    if (watts < 1000) return `${watts} W`;
+    return `${(watts / 1000).toFixed(1)} kW`;
+  }
+
   /* ── GRAFO ──────────────────────────────────────────────── */
 
   _renderGraph() {
@@ -362,7 +557,7 @@ class RoomLightsGraphCard extends HTMLElement {
       if (!rPos) return;
 
       this._addLine(lG, CX, CY, rPos.x, rPos.y, 'center', rKey, false);
-      nG.appendChild(this._makeRoomNode(rPos, room.name, rKey));
+      nG.appendChild(this._makeRoomNode(rPos, room, rKey, i));
 
       const lights = this._parseDevices(room.lights || [], 'dev_');
       const switches = this._parseDevices(room.switches || [], 'dev_');
@@ -384,8 +579,43 @@ class RoomLightsGraphCard extends HTMLElement {
       });
     });
 
+    // Aggiungi indicatore consumo totale sotto CASA
+    this._addPowerDisplay(nG);
+
     // Ripristina il pan salvato
     this._applyTransform();
+  }
+
+  // Aggiunge display consumo energetico totale
+  _addPowerDisplay(nG) {
+    const totalPower = this._calculateTotalPower();
+    const CX = 475, CY = 460;
+    
+    const g = this._svgEl('g');
+    g.setAttribute('id', 'power-display');
+    
+    // Testo consumo totale
+    const powerText = this._svgEl('text');
+    powerText.setAttribute('x', CX);
+    powerText.setAttribute('y', CY + 92);
+    powerText.setAttribute('text-anchor', 'middle');
+    powerText.setAttribute('class', 'power-label');
+    powerText.setAttribute('style', 
+      'font-size:16px;font-weight:800;fill:var(--primary-text-color);pointer-events:none');
+    powerText.textContent = '⚡ ' + this._formatPower(totalPower);
+    g.appendChild(powerText);
+    
+    // Label "Consumo"
+    const labelText = this._svgEl('text');
+    labelText.setAttribute('x', CX);
+    labelText.setAttribute('y', CY + 110);
+    labelText.setAttribute('text-anchor', 'middle');
+    labelText.setAttribute('style', 
+      'font-size:11px;opacity:0.7;fill:var(--primary-text-color);pointer-events:none');
+    labelText.textContent = 'Consumo Totale';
+    g.appendChild(labelText);
+    
+    nG.appendChild(g);
   }
 
   _addLine(g, x1, y1, x2, y2, from, to, isTemp) {
@@ -399,15 +629,32 @@ class RoomLightsGraphCard extends HTMLElement {
 
   /* ── NODI SVG ───────────────────────────────────────────── */
 
-  // Stanza: cerchio grande r=58
-  _makeRoomNode(pos, name, key) {
+  // Stanza: cerchio grande r=58 con consumo opzionale
+  _makeRoomNode(pos, room, key, roomIndex) {
     const g = this._svgG(key,'room');
     const c = this._svgEl('circle');
     c.setAttribute('class','room-circle');
     c.setAttribute('cx',pos.x); c.setAttribute('cy',pos.y); c.setAttribute('r',58);
     g.appendChild(c);
-    g.appendChild(this._svgText(pos.x, pos.y+7, name, 'lbl',
+    
+    // Nome stanza
+    g.appendChild(this._svgText(pos.x, pos.y+7, room.name, 'lbl',
       'fill:white;font-size:15px', 7));
+    
+    // Consumo stanza (se ci sono dispositivi con power configurato)
+    const roomPower = this._calculateRoomPower(room);
+    if (roomPower > 0) {
+      const powerLabel = this._svgEl('text');
+      powerLabel.setAttribute('class', 'room-power');
+      powerLabel.setAttribute('x', pos.x);
+      powerLabel.setAttribute('y', pos.y + 82);
+      powerLabel.setAttribute('text-anchor', 'middle');
+      powerLabel.setAttribute('style', 
+        'font-size:11px;font-weight:700;fill:rgba(255,255,255,0.85);pointer-events:none');
+      powerLabel.textContent = '⚡ ' + this._formatPower(roomPower);
+      g.appendChild(powerLabel);
+    }
+    
     return g;
   }
 
@@ -573,9 +820,22 @@ class RoomLightsGraphCard extends HTMLElement {
     btn.onclick = () => {
       btn.classList.add('spinning');
       setTimeout(()=>btn.classList.remove('spinning'), 500);
-      this._clearPositions();   // cancella localStorage
-      this._generatePositions(); // rigenera casualmente
-      this._savePositions();    // salva le nuove posizioni
+      
+      // Pulisci localStorage
+      this._clearPositions();
+      
+      // Resetta completamente le posizioni (non fare merge)
+      this._translateX = 0; 
+      this._translateY = 0;
+      this._nodePositions.clear();  // Svuota la Map completamente
+      
+      // Rigenera tutto da zero
+      this._generatePositions();
+      
+      // Salva le nuove posizioni
+      this._savePositions();
+      
+      // Ridisegna
       this._renderGraph();
       this._updateStates();
     };
@@ -608,6 +868,59 @@ class RoomLightsGraphCard extends HTMLElement {
     this._updateDevStates();
     this._updateTmpStates();
     this._updateRoomStates();
+    this._updatePowerDisplay();  // Aggiorna consumo totale e per stanza
+  }
+
+  _updatePowerDisplay() {
+    // Aggiorna consumo totale
+    const powerDisplay = this.shadowRoot.querySelector('#power-display .power-label');
+    if (powerDisplay) {
+      const totalPower = this._calculateTotalPower();
+      powerDisplay.textContent = '⚡ ' + this._formatPower(totalPower);
+      
+      // Colore in base al consumo
+      powerDisplay.classList.remove('power-low', 'power-med', 'power-high');
+      if (totalPower > 1500) {
+        powerDisplay.classList.add('power-high');
+      } else if (totalPower > 500) {
+        powerDisplay.classList.add('power-med');
+      } else if (totalPower > 0) {
+        powerDisplay.classList.add('power-low');
+      }
+    }
+    
+    // Aggiorna consumo per ogni stanza
+    (this._config.rooms || []).forEach((room, i) => {
+      const roomNode = this.shadowRoot.querySelector(`g[data-key="room_${i}"]`);
+      if (!roomNode) return;
+      
+      const roomPowerLabel = roomNode.querySelector('.room-power');
+      const roomPower = this._calculateRoomPower(room);
+      
+      if (roomPower > 0) {
+        if (roomPowerLabel) {
+          // Aggiorna esistente
+          roomPowerLabel.textContent = '⚡ ' + this._formatPower(roomPower);
+        } else {
+          // Crea nuovo se non esiste
+          const pos = this._nodePositions.get(`room_${i}`);
+          if (pos) {
+            const label = this._svgEl('text');
+            label.setAttribute('class', 'room-power');
+            label.setAttribute('x', pos.x);
+            label.setAttribute('y', pos.y + 82);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('style', 
+              'font-size:11px;font-weight:700;fill:rgba(255,255,255,0.85);pointer-events:none');
+            label.textContent = '⚡ ' + this._formatPower(roomPower);
+            roomNode.appendChild(label);
+          }
+        }
+      } else if (roomPowerLabel) {
+        // Rimuovi label se consumo = 0
+        roomPowerLabel.remove();
+      }
+    });
   }
 
   _updateDevStates() {
