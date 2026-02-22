@@ -637,7 +637,39 @@ rooms:
 | `temperature_sensors` | list | optional | List of `sensor.*` entities |
 | `power` | number | ❌ | Consumption in Watts (optional, lights/switches only) |
 ---
+#### Device Format
 
+**Simple Format** (uses Home Assistant friendly_name):
+```yaml
+lights:
+  - light.entity_id
+```
+
+**Object Format** (with custom name):
+```yaml
+lights:
+  - entity: light.entity_id
+    name: "Custom Name"
+```
+
+**Full Format** (with name and power):
+```yaml
+lights:
+  - entity: light.entity_id
+    name: "Custom Name"
+    power: 60  # Wattage in W
+```
+
+**Mixed Format** (you can combine them):
+```yaml
+lights:
+  - light.entity1                    # uses friendly_name
+  - entity: light.entity2
+    name: "Custom Name"              # uses custom name
+  - entity: light.entity3
+    name: "S1"
+    power: 10                        # with power consumption
+```
 ### 🎮 Usage
 
 #### Basic Controls
