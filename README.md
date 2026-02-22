@@ -42,7 +42,7 @@
 - 🏷️ **Nomi Personalizzati** - Rinomina i dispositivi direttamente nella configurazione
 - 📱 **Responsive** - Funziona su desktop, tablet e mobile
 - 🎭 **Temi** - Si adatta automaticamente al tema di Home Assistant
-
+- ⚡ **Monitoraggio Consumi** - Calcolo in tempo reale del consumo energetico totale e per stanza
 ### 🎬 Funzionalità Visive
 
 #### Luci
@@ -197,6 +197,53 @@ rooms:
       - entity: sensor.temperatura_camera
         name: "T"
 ```
+#### Configurazione con Monitoraggio Consumi (✨ NUOVO v1.0.5)
+```yaml
+type: custom:room-lights-graph-card
+title: Casa - Monitoraggio Consumi
+rooms:
+  - name: Soggiorno
+    lights:
+      # Aggiungi il campo "power" in Watt
+      - entity: light.soggiorno_principale
+        name: "Lampadario"
+        power: 60
+      
+      - entity: light.lampada_angolo
+        name: "Lettura"
+        power: 15
+      
+      - entity: light.strip_led
+        name: "LED"
+        power: 20
+    
+    switches:
+      - entity: switch.tv
+        name: "TV"
+        power: 150
+    
+    temperature_sensors:
+      - entity: sensor.temperatura_soggiorno
+        name: "Temp"
+
+  - name: Cucina
+    lights:
+      # Faretti LED - 10W ciascuno
+      - entity: light.faretto1
+        name: "F1"
+        power: 10
+      
+      - entity: light.faretto2
+        name: "F2"
+        power: 10
+      
+      - entity: light.faretto3
+        name: "F3"
+        power: 10
+      
+      # Puoi mescolare dispositivi con/senza power
+      - light.luce_senza_power  # escluso dal calcolo consumi
+```
 #### Opzioni Configurazione
 
 | Opzione | Tipo | Default | Descrizione |
@@ -208,9 +255,41 @@ rooms:
 | `lights` | list | opzionale | Lista di entità `light.*` |
 | `switches` | list | opzionale | Lista di entità `switch.*` |
 | `temperature_sensors` | list | opzionale | Lista di entità `sensor.*` |
-
+| `power` | number | ❌ | Consumo in Watt (opzionale, solo per lights/switches) |
 ---
+#### Formato Dispositivi
 
+**Formato Semplice** (usa friendly_name di Home Assistant):
+```yaml
+lights:
+  - light.entity_id
+```
+
+**Formato Oggetto** (con nome personalizzato):
+```yaml
+lights:
+  - entity: light.entity_id
+    name: "Nome Custom"
+```
+
+**Formato Completo** (con nome e consumo):
+```yaml
+lights:
+  - entity: light.entity_id
+    name: "Nome Custom"
+    power: 60  # Wattaggio in W
+```
+
+**Formato Misto** (puoi combinarli):
+```yaml
+lights:
+  - light.entity1                    # usa friendly_name
+  - entity: light.entity2
+    name: "Nome Custom"              # usa nome custom
+  - entity: light.entity3
+    name: "F1"
+    power: 10                        # con consumo
+```
 ### 🎮 Utilizzo
 
 #### Controlli Base
@@ -335,6 +414,7 @@ Se ti piace questo progetto:
 - 🎲 **Random Placement** - Each reset generates random positions without overlaps
 - 🏷️ **Custom Names** - Rename devices directly in configuration
 - 📱 **Responsive** - Works on desktop, tablet, and mobile
+- ⚡ **Power Monitoring** - Real-time calculation of total and per-room energy consumption
 - 🎭 **Themes** - Automatically adapts to Home Assistant theme
 
 ### 🎬 Visual Features
@@ -496,6 +576,54 @@ rooms:
       - entity: sensor.bedroom_temperature
         name: "T"
 ```
+#### Configuration with Power Monitoring (✨ NEW v1.0.5)
+```yaml
+type: custom:room-lights-graph-card
+title: Home - Power Monitoring
+rooms:
+  - name: Living Room
+    lights:
+      # Add "power" field in Watts
+      - entity: light.living_room_main
+        name: "Ceiling"
+        power: 60
+      
+      - entity: light.floor_lamp
+        name: "Reading"
+        power: 15
+      
+      - entity: light.led_strip
+        name: "LED"
+        power: 20
+    
+    switches:
+      - entity: switch.tv
+        name: "TV"
+        power: 150
+    
+    temperature_sensors:
+      - entity: sensor.living_room_temp
+        name: "Temp"
+
+  - name: Kitchen
+    lights:
+      # LED spotlights - 10W each
+      - entity: light.spotlight1
+        name: "S1"
+        power: 10
+      
+      - entity: light.spotlight2
+        name: "S2"
+        power: 10
+      
+      - entity: light.spotlight3
+        name: "S3"
+        power: 10
+      
+      # Mix devices with/without power
+      - light.light_without_power  # excluded from power calculation
+```
+
 #### Configuration Options
 
 | Option | Type | Default | Description |
@@ -507,6 +635,7 @@ rooms:
 | `lights` | list | optional | List of `light.*` entities |
 | `switches` | list | optional | List of `switch.*` entities |
 | `temperature_sensors` | list | optional | List of `sensor.*` entities |
+| `power` | number | ❌ | Consumption in Watts (optional, lights/switches only) |
 ---
 
 ### 🎮 Usage
