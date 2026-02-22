@@ -5,13 +5,12 @@
 [![License](https://img.shields.io/github/license/ago19800/room-lights-graph-card.svg)](LICENSE)
 
 [🇮🇹 Italiano](#italiano) | [🇬🇧 English](#english)
-
 <p align="center">
-  <img src="image/Screenshot_20260209_181202_Home Assistant.jpg" width="260" alt="Foto 1">
-  <img src="image/Screenshot_20260209_181126_Home Assistant.jpg" width="260" alt="Foto 2">
-  <img src="image/Screenshot_20260209_181143_Home Assistant.jpg" width="260" alt="Foto 3">
-  <img src="image/Screenshot_20260215_094145_Home Assistant.jpg" width="260" alt="Foto 4">
-  <img src="image/Screenshot_20260215_094209_Home Assistant.jpg" width="260" alt="Foto 5">
+  <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260209_181202_Home%20Assistant.jpg" width="260" alt="Foto 1">
+  <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260209_181126_Home%20Assistant.jpg" width="260" alt="Foto 2">
+  <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260209_181143_Home%20Assistant.jpg" width="260" alt="Foto 3">
+  <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260215_094145_Home%20Assistant.jpg" width="260" alt="Foto 4">
+  <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260215_094209_Home%20Assistant.jpg" width="260" alt="Foto 5">
 </p>
 
 ☕ Supporta il Progetto
