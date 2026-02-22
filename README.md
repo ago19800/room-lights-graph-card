@@ -11,6 +11,7 @@
   <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260209_181143_Home%20Assistant.jpg" width="260" alt="Foto 3">
   <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260215_094145_Home%20Assistant.jpg" width="260" alt="Foto 4">
   <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260215_094209_Home%20Assistant.jpg" width="260" alt="Foto 5">
+  <img src="https://raw.githubusercontent.com/ago19800/room-lights-graph-card/main/image/Screenshot_20260222_231813_Home%20Assistant.jpg" width="260" alt="Foto 6">
 </p>
 
 ☕ Supporta il Progetto
